@@ -4,18 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'tappable_polygon.dart';
+import 'tappable_polyline.dart';
+
 typedef MarkerCreationCallback = Marker Function(
     LatLng point, Map<String, dynamic> properties);
-typedef PolylineCreationCallback = Polyline Function(
+typedef TaggedPolylineCreationCallback = TaggedPolyline Function(
     List<LatLng> points, Map<String, dynamic> properties);
-typedef PolygonCreationCallback = Polygon Function(List<LatLng> points,
-    List<List<LatLng>>? holePointsList, Map<String, dynamic> properties);
+typedef TaggedPolygonCreationCallback = TaggedPolygon Function(
+    List<LatLng> points,
+    List<List<LatLng>>? holePointsList,
+    Map<String, dynamic> properties);
 
 /// GeoJsonParser parses the GeoJson and fills three lists of parsed objects
 /// which are defined in flutter_map package
 /// - list of [Marker]s
-/// - list of [Polyline]s
-/// - list of [Polygon]s
+/// - list of [TaggedPolyline]s
+/// - list of [TaggedPolygon]s
 ///
 /// One should pass these lists when creating adequate layers in flutter_map.
 /// For details see example.
@@ -23,29 +28,29 @@ typedef PolygonCreationCallback = Polygon Function(List<LatLng> points,
 /// Currently GeoJson parser supports only FeatureCollection and not GeometryCollection.
 /// See the GeoJson Format specification at: https://www.rfc-editor.org/rfc/rfc7946
 ///
-/// For creation of [Marker], [Polyline] and [Polygon] objects the default callback functions
+/// For creation of [Marker], [TaggedPolyline] and [TaggedPolygon] objects the default callback functions
 /// are provided which are used in case when no user-defined callback function is provided.
-/// To fully customize the  [Marker], [Polyline] and [Polygon] creation one has to write his own
+/// To fully customize the  [Marker], [TaggedPolyline] and [TaggedPolygon] creation one has to write his own
 /// callback functions. As a template the default callback functions can be used.
 ///
 class GeoJsonParser {
   /// list of [Marker] objects created as result of parsing
   final List<Marker> markers = [];
 
-  /// list of [Polyline] objects created as result of parsing
-  final List<Polyline> polylines = [];
+  /// list of [TaggedPolyline] objects created as result of parsing
+  final List<TaggedPolyline> polylines = [];
 
-  /// list of [Polygon] objects created as result of parsing
-  final List<Polygon> polygons = [];
+  /// list of [TaggedPolygon] objects created as result of parsing
+  final List<TaggedPolygon> polygons = [];
 
   /// user defined callback function that creates a [Marker] object
   MarkerCreationCallback? markerCreationCallback;
 
-  /// user defined callback function that creates a [Polyline] object
-  PolylineCreationCallback? polyLineCreationCallback;
+  /// user defined callback function that creates a [TaggedPolyline] object
+  TaggedPolylineCreationCallback? polyLineCreationCallback;
 
-  /// user defined callback function that creates a [Polygon] object
-  PolygonCreationCallback? polygonCreationCallback;
+  /// user defined callback function that creates a [TaggedPolygon] object
+  TaggedPolygonCreationCallback? polygonCreationCallback;
 
   /// default [Marker] color
   Color? defaultMarkerColor;
@@ -53,23 +58,23 @@ class GeoJsonParser {
   /// default [Marker] icon
   IconData? defaultMarkerIcon;
 
-  /// default [Polyline] color
-  Color? defaultPolylineColor;
+  /// default [TaggedPolyline] color
+  Color? defaultTaggedPolylineColor;
 
-  /// default [Polyline] stroke
-  double? defaultPolylineStroke;
+  /// default [TaggedPolyline] stroke
+  double? defaultTaggedPolylineStroke;
 
-  /// default [Polygon] border color
-  Color? defaultPolygonBorderColor;
+  /// default [TaggedPolygon] border color
+  Color? defaultTaggedPolygonBorderColor;
 
-  /// default [Polygon] fill color
-  Color? defaultPolygonFillColor;
+  /// default [TaggedPolygon] fill color
+  Color? defaultTaggedPolygonFillColor;
 
-  /// default [Polygon] border stroke
-  double? defaultPolygonBorderStroke;
+  /// default [TaggedPolygon] border stroke
+  double? defaultTaggedPolygonBorderStroke;
 
-  /// default flag if [Polygon] is filled (default is true)
-  bool? defaultPolygonIsFilled;
+  /// default flag if [TaggedPolygon] is filled (default is true)
+  bool? defaultTaggedPolygonIsFilled;
 
   /// user defined callback function called when the [Marker] is tapped
   void Function(Map<String, dynamic>)? onMarkerTapCallback;
@@ -82,12 +87,12 @@ class GeoJsonParser {
       this.defaultMarkerColor,
       this.defaultMarkerIcon,
       this.onMarkerTapCallback,
-      this.defaultPolylineColor,
-      this.defaultPolylineStroke,
-      this.defaultPolygonBorderColor,
-      this.defaultPolygonFillColor,
-      this.defaultPolygonBorderStroke,
-      this.defaultPolygonIsFilled});
+      this.defaultTaggedPolylineColor,
+      this.defaultTaggedPolylineStroke,
+      this.defaultTaggedPolygonBorderColor,
+      this.defaultTaggedPolygonFillColor,
+      this.defaultTaggedPolygonBorderStroke,
+      this.defaultTaggedPolygonIsFilled});
 
   /// parse GeJson in [String] format
   void parseGeoJsonAsString(String g) {
@@ -110,54 +115,56 @@ class GeoJsonParser {
     onMarkerTapCallback = onTapFunction;
   }
 
-  /// set default [Polyline] color
-  set setDefaultPolylineColor(Color color) {
-    defaultPolylineColor = color;
+  /// set default [TaggedPolyline] color
+  set setDefaultTaggedPolylineColor(Color color) {
+    defaultTaggedPolylineColor = color;
   }
 
-  /// set default [Polyline] stroke
-  set setDefaultPolylineStroke(double stroke) {
-    defaultPolylineStroke = stroke;
+  /// set default [TaggedPolyline] stroke
+  set setDefaultTaggedPolylineStroke(double stroke) {
+    defaultTaggedPolylineStroke = stroke;
   }
 
-  /// set default [Polygon] fill color
-  set setDefaultPolygonFillColor(Color color) {
-    defaultPolygonFillColor = color;
+  /// set default [TaggedPolygon] fill color
+  set setDefaultTaggedPolygonFillColor(Color color) {
+    defaultTaggedPolygonFillColor = color;
   }
 
-  /// set default [Polygon] border stroke
-  set setDefaultPolygonBorderStroke(double stroke) {
-    defaultPolygonBorderStroke = stroke;
+  /// set default [TaggedPolygon] border stroke
+  set setDefaultTaggedPolygonBorderStroke(double stroke) {
+    defaultTaggedPolygonBorderStroke = stroke;
   }
 
-  /// set default [Polygon] border color
-  set setDefaultPolygonBorderColorStroke(Color color) {
-    defaultPolygonBorderColor = color;
+  /// set default [TaggedPolygon] border color
+  set setDefaultTaggedPolygonBorderColorStroke(Color color) {
+    defaultTaggedPolygonBorderColor = color;
   }
 
-  /// set default [Polygon] setting whether polygon is filled
-  set setDefaultPolygonIsFilled(bool filled) {
-    defaultPolygonIsFilled = filled;
+  /// set default [TaggedPolygon] setting whether polygon is filled
+  set setDefaultTaggedPolygonIsFilled(bool filled) {
+    defaultTaggedPolygonIsFilled = filled;
   }
 
   /// main GeoJson parsing function
   void parseGeoJson(Map<String, dynamic> g) {
     // set default values if they are not specified by constructor
+    final stopwatch = Stopwatch()..start();
     markerCreationCallback ??= createDefaultMarker;
-    polyLineCreationCallback ??= createDefaultPolyline;
-    polygonCreationCallback ??= createDefaultPolygon;
+    polyLineCreationCallback ??= createDefaultTaggedPolyline;
+    polygonCreationCallback ??= createDefaultTaggedPolygon;
     defaultMarkerColor ??= Colors.red.withOpacity(0.8);
     defaultMarkerIcon ??= Icons.location_pin;
-    defaultPolylineColor ??= Colors.blue.withOpacity(0.8);
-    defaultPolylineStroke ??= 3.0;
-    defaultPolygonBorderColor ??= Colors.black.withOpacity(0.8);
-    defaultPolygonFillColor ??= Colors.black.withOpacity(0.1);
-    defaultPolygonIsFilled ??= true;
-    defaultPolygonBorderStroke ??= 1.0;
+    defaultTaggedPolylineColor ??= Colors.blue.withOpacity(0.8);
+    defaultTaggedPolylineStroke ??= 3.0;
+    defaultTaggedPolygonBorderColor ??= Colors.black.withOpacity(0.8);
+    defaultTaggedPolygonFillColor ??= Colors.black.withOpacity(0.1);
+    defaultTaggedPolygonIsFilled ??= true;
+    defaultTaggedPolygonBorderStroke ??= 1.0;
 
     // loop through the GeoJson Map and parse it
     for (Map f in g['features'] as List) {
       String geometryType = f['geometry']['type'].toString();
+      //debugPrint("geometryType: $geometryType");
       switch (geometryType) {
         case 'Point':
           {
@@ -261,6 +268,8 @@ class GeoJsonParser {
           break;
       }
     }
+    debugPrint(
+        'parseGeoJson() executed in ${stopwatch.elapsed.inMilliseconds}');
     return;
   }
 
@@ -286,25 +295,25 @@ class GeoJsonParser {
     );
   }
 
-  /// default callback function for creating [Polyline]
-  Polyline createDefaultPolyline(
+  /// default callback function for creating [TaggedPolyline]
+  TaggedPolyline createDefaultTaggedPolyline(
       List<LatLng> points, Map<String, dynamic> properties) {
-    return Polyline(
+    return TaggedPolyline(
         points: points,
-        color: defaultPolylineColor!,
-        strokeWidth: defaultPolylineStroke!);
+        color: defaultTaggedPolylineColor!,
+        strokeWidth: defaultTaggedPolylineStroke!);
   }
 
-  /// default callback function for creating [Polygon]
-  Polygon createDefaultPolygon(List<LatLng> outerRing,
+  /// default callback function for creating [TaggedPolygon]
+  TaggedPolygon createDefaultTaggedPolygon(List<LatLng> outerRing,
       List<List<LatLng>>? holesList, Map<String, dynamic> properties) {
-    return Polygon(
+    return TaggedPolygon(
       points: outerRing,
       holePointsList: holesList,
-      borderColor: defaultPolygonBorderColor!,
-      color: defaultPolygonFillColor!,
-      isFilled: defaultPolygonIsFilled!,
-      borderStrokeWidth: defaultPolygonBorderStroke!,
+      borderColor: defaultTaggedPolygonBorderColor!,
+      color: defaultTaggedPolygonFillColor!,
+      isFilled: defaultTaggedPolygonIsFilled!,
+      borderStrokeWidth: defaultTaggedPolygonBorderStroke!,
     );
   }
 

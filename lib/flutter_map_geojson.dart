@@ -2,3 +2,5 @@
 library flutter_map_geojson;
 
 export 'src/geojson_parser.dart';
+export 'src/tappable_polyline.dart';
+export 'src/tappable_polygon.dart';
